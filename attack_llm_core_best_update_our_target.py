@@ -3,6 +3,7 @@ import json
 import yaml
 import datetime
 import random
+from tqdm import tqdm
 import copy
 import os
 parser = argparse.ArgumentParser()
@@ -168,7 +169,7 @@ current_tcs = []
 temp = 0
 v2_success_counter = 0
 previous_update_k_loss=100
-for i in range(num_steps):
+for i in tqdm(range(num_steps)):
 
     # Step 1. Encode user prompt (behavior + adv suffix) as tokens and return token ids.
     input_ids = suffix_manager.get_input_ids(adv_string=adv_suffix)
