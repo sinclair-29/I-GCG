@@ -3,6 +3,7 @@ import json
 import yaml
 import datetime
 import random
+import tqdm
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_path', type=str, default="./models/Llama-2-7b-chat-hf")
@@ -31,6 +32,28 @@ from llm_attacks.minimal_gcg.opt_utils import load_model_and_tokenizer, get_filt
 from llm_attacks.minimal_gcg.string_utils import SuffixManager, load_conversation_template
 from llm_attacks import get_nonascii_toks
 
+class TqdmLoggingHandler(logging.Handler):
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            tqdm.write(msg)
+        except Exception:
+            self.handleError(record)
+
+def setup_logger() -> logging.Logger:
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        fmt="%(asctime)s %(levelname)s: %(message)s",
+        datefmt="%a %d %b %Y %H:%M:%S"
+    )
+    tqdm_handler = TqdmLoggingHandler()
+    tqdm_handler.setLevel(logging.INFO)
+    tqdm_handler.setFormatter(formatter)
+    if not logger.handlers:
+        logger.addHandler(tqdm_handler)
+    return logger
+
 # Set the random seed for NumPy
 np.random.seed(20)
 
@@ -41,6 +64,7 @@ torch.manual_seed(20)
 torch.cuda.manual_seed_all(20)
 
 model_path = args.model_path
+logger = setup_logger()
 
 print('behavior_config:',args.behaviors_config)
 behavior_config = yaml.load(open(args.behaviors_config), Loader=yaml.FullLoader)[args.id - 1]
@@ -156,7 +180,7 @@ log_dict = []
 current_tcs = []
 temp = 0
 v2_success_counter = 0
-for i in range(num_steps):
+for i in tqdm(range(num_steps)):
 
     # Step 1. Encode user prompt (behavior + adv suffix) as tokens and return token ids.
     input_ids = suffix_manager.get_input_ids(adv_string=adv_suffix)
@@ -211,7 +235,7 @@ for i in range(num_steps):
         current_loss = losses[best_new_adv_suffix_id]
 
 
-        print("best_new_adv_suffix",best_new_adv_suffix)
+        logger.info("best_new_adv_suffix", best_new_adv_suffix)
         # Update the running adv_suffix with the best candidate
         adv_suffix = best_new_adv_suffix
         is_success,gen_str = check_for_attack_success(model,
