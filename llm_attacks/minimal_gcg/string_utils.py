@@ -13,6 +13,8 @@ def load_conversation_template(template_name):
 
 
 class SuffixManager:
+    # 这个类的作用作为储存 suffix的buffer
+    # 存在问题，fastchat
     def __init__(self, *, tokenizer, conv_template, instruction, target, adv_string):
 
         self.tokenizer = tokenizer

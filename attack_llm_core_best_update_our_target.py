@@ -6,7 +6,7 @@ import random
 import copy
 import os
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default="/home/LLM/Llama-2-7b-chat-hf")
+parser.add_argument('--model_path', type=str, default="./models/Llama-2-7b-chat-hf")
 
 parser.add_argument('--device', type=int, default=0)
 parser.add_argument('--id', type=int, default=50)
@@ -363,6 +363,8 @@ for i in range(num_steps):
             log_json_file.parent.mkdir(parents=True)
         with open(str(log_json_file.absolute()), 'w') as f:
             json.dump(log_dict, f, indent=4)
+
+# end for loop
 
 submission_json_file = pathlib.Path(f'{args.output_path}/submission/result_{args.id}.json')
 if not submission_json_file.parent.exists():
