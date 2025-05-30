@@ -2,6 +2,7 @@ import threading
 import time
 import random
 import datetime
+import logging
 from run_single_attack_base import run_single_process
 import os
 # make the timestamp utc-8

@@ -124,7 +124,9 @@ class SuffixManager:
                 )
 
         self.conv_template.messages = []
-
+        print("===========")
+        print(prompt)
+        print("===========")
         return prompt
     
     def get_input_ids(self, adv_string=None):

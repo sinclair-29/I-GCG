@@ -7,10 +7,10 @@ from tqdm import tqdm
 import copy
 import os
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default="./models/Llama-2-7b-chat-hf")
+parser.add_argument('--model_path', type=str, default="../LLMJailbreak/models/Llama-2-7b-chat-hf")
 
 parser.add_argument('--device', type=int, default=0)
-parser.add_argument('--id', type=int, default=50)
+parser.add_argument('--id', type=int, default=47)
 parser.add_argument('--K', type=int, default=7)
 parser.add_argument('--defense', type=str, default="without_defense")
 parser.add_argument('--behaviors_config', type=str, default="behaviors_ours_config.json")
@@ -237,7 +237,7 @@ for i in tqdm(range(num_steps)):
 
             # current_loss = losses[idx] + current_loss
 
-            print('temp_new_adv_suffix', temp_new_adv_suffix)
+            # print('temp_new_adv_suffix', temp_new_adv_suffix)
             temp_new_adv_suffix_ids = tokenizer(temp_new_adv_suffix, add_special_tokens=False).input_ids
 
             # print((adv_suffix_ids))
@@ -272,7 +272,7 @@ for i in tqdm(range(num_steps)):
         # print("current_update_k_loss",current_update_k_loss)
         #
         # print('best_new_adv_suffix',best_new_adv_suffix)
-        print('all_new_adv_suffix',all_new_adv_suffix)
+        # print('all_new_adv_suffix',all_new_adv_suffix)
 
         new_logits, new_ids = get_logits(model=model,
                                      tokenizer=tokenizer,

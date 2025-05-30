@@ -3,10 +3,11 @@ import json
 import yaml
 import datetime
 import random
+import logging
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default="./models/Llama-2-7b-chat-hf")
+parser.add_argument('--model_path', type=str, default="../LLMJailbreak/models/Llama-2-7b-chat-hf")
 parser.add_argument('--device', type=int, default=0)
 parser.add_argument('--id', type=int, default=50)
 parser.add_argument('--defense', type=str, default="without_defense")
