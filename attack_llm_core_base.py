@@ -235,8 +235,8 @@ for i in tqdm(range(num_steps)):
 
         current_loss = losses[best_new_adv_suffix_id]
 
-
-        logger.info("best_new_adv_suffix", best_new_adv_suffix)
+        logger.info(f"best_new_adv_suffix: {best_new_adv_suffix}")
+        #logger.info("best_new_adv_suffix", best_new_adv_suffix)
         # Update the running adv_suffix with the best candidate
         adv_suffix = best_new_adv_suffix
         is_success,gen_str = check_for_attack_success(model,
