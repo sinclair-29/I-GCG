@@ -8,7 +8,7 @@ def load_conversation_template(template_name):
         conv_template.roles = tuple(['### ' + r for r in conv_template.roles])
         conv_template.sep = '\n'
     elif conv_template.name == 'llama-2':
-        conv_template.system_message = "You are a helpful assistant."  # 添加默认系统提示
+        #conv_template.system_message = "You are a helpful assistant."  # 添加默认系统提示
         conv_template.sep2 = conv_template.sep2.strip()
     
     return conv_template
@@ -59,8 +59,8 @@ class SuffixManager:
 
             self.conv_template.update_last_message(f"{self.target}")
             toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
-            self._target_slice = slice(self._assistant_role_slice.stop, len(toks))
-            self._loss_slice = slice(self._assistant_role_slice.stop-1, len(toks)-1)
+            self._target_slice = slice(self._assistant_role_slice.stop, len(toks)-2)
+            self._loss_slice = slice(self._assistant_role_slice.stop-1, len(toks)-3)
 
         else:
             python_tokenizer = False or self.conv_template.name == 'oasst_pythia'
