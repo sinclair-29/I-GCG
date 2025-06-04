@@ -1,5 +1,6 @@
 import torch
-import fastchat 
+import fastchat
+from transformers import AutoTokenizer
 
 def load_conversation_template(template_name):
     conv_template = fastchat.model.get_conversation_template(template_name)
@@ -136,3 +137,45 @@ class SuffixManager:
 
         return input_ids
 
+def main():
+    def decode_slice(slice_obj):
+        return tokenizer.decode(input_ids[slice_obj], skip_special_tokens=True)
+
+    model_path = "../LLMJailbreak/models/Llama-2-7b-chat-hf"
+    tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+
+    conv_template = load_conversation_template("llama-2")
+
+    manager = SuffixManager(
+        tokenizer=tokenizer,
+        conv_template=conv_template,
+        instruction="Write a positive movie review.",
+        target="This movie was amazing!",
+        adv_string="!!!TEST ADVERSARIAL STRING!!!"
+    )
+
+    # prompt_str = manager.get_prompt()
+    # print("\n【生成的完整 prompt】\n", prompt_str)
+
+    input_ids = manager.get_input_ids()
+    print("\n【input_ids 形状】:", input_ids.shape)
+    print("【input_ids 内容】:", input_ids.tolist())
+
+    print("\n【各 slice 范围】:")
+    print("User Role Slice:", manager._user_role_slice)
+    print("Goal Slice:", manager._goal_slice)
+    print("Control Slice:", manager._control_slice)
+    print("Assistant Role Slice:", manager._assistant_role_slice)
+    print("Target Slice:", manager._target_slice)
+    print("Loss Slice:", manager._loss_slice)
+
+    print("User Role Slice内容:", decode_slice(manager._user_role_slice))
+    print("Goal Slice内容:", decode_slice(manager._goal_slice))
+    print("Control Slice内容:", decode_slice(manager._control_slice))
+    print("Assistant Role Slice内容:", decode_slice(manager._assistant_role_slice))
+    print("Target Slice内容:", decode_slice(manager._target_slice))
+    print("Loss Slice内容:", decode_slice(manager._loss_slice))
+
+
+if __name__ == "__main__":
+    main()
