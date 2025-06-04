@@ -54,7 +54,7 @@ class SuffixManager:
         toks = encoding.input_ids
 
         if self.conv_template.name == 'llama-2':
-            """"
+            
             self.conv_template.messages = []
             test = "a"
             self.conv_template.append_message(self.conv_template.roles[0], test)
@@ -67,6 +67,7 @@ class SuffixManager:
             self.conv_template.append_message(self.conv_template.roles[0], None)
             toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
             self._user_role_slice = slice(None, len(toks))
+            """
 
             self.conv_template.update_last_message(f"{self.instruction}")
             toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
