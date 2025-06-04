@@ -1,5 +1,5 @@
 import torch
-import fastchat
+import fastchat.model
 from transformers import AutoTokenizer
 
 def load_conversation_template(template_name):
@@ -8,6 +8,7 @@ def load_conversation_template(template_name):
         conv_template.roles = tuple(['### ' + r for r in conv_template.roles])
         conv_template.sep = '\n'
     elif conv_template.name == 'llama-2':
+        conv_template.system_message = "You are a helpful assistant."  # 添加默认系统提示
         conv_template.sep2 = conv_template.sep2.strip()
     
     return conv_template
@@ -40,26 +41,26 @@ class SuffixManager:
             self.conv_template.messages = []
 
             self.conv_template.append_message(self.conv_template.roles[0], None)
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
             self._user_role_slice = slice(None, len(toks))
 
             self.conv_template.update_last_message(f"{self.instruction}")
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
             self._goal_slice = slice(self._user_role_slice.stop, max(self._user_role_slice.stop, len(toks)))
 
             separator = ' ' if self.instruction else ''
             self.conv_template.update_last_message(f"{self.instruction}{separator}{self.adv_string}")
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
             self._control_slice = slice(self._goal_slice.stop, len(toks))
 
             self.conv_template.append_message(self.conv_template.roles[1], None)
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
             self._assistant_role_slice = slice(self._control_slice.stop, len(toks))
 
             self.conv_template.update_last_message(f"{self.target}")
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
-            self._target_slice = slice(self._assistant_role_slice.stop, len(toks)-2)
-            self._loss_slice = slice(self._assistant_role_slice.stop-1, len(toks)-3)
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
+            self._target_slice = slice(self._assistant_role_slice.stop, len(toks))
+            self._loss_slice = slice(self._assistant_role_slice.stop-1, len(toks)-1)
 
         else:
             python_tokenizer = False or self.conv_template.name == 'oasst_pythia'
