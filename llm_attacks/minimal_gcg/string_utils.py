@@ -8,11 +8,27 @@ def load_conversation_template(template_name):
         conv_template.roles = tuple(['### ' + r for r in conv_template.roles])
         conv_template.sep = '\n'
     elif conv_template.name == 'llama-2':
-        #conv_template.system_message = "You are a helpful assistant."  # 添加默认系统提示
+        conv_template.system_message = "You are a helpful assistant."  # 添加默认系统提示
         conv_template.sep2 = conv_template.sep2.strip()
     
     return conv_template
 
+
+"""
+# llama2 template
+# reference: https://huggingface.co/blog/codellama#conversational-instructions
+# reference: https://github.com/facebookresearch/llama/blob/1a240688810f8036049e8da36b073f63d2ac552c/llama/generation.py#L212
+register_conv_template(
+    Conversation(
+        name="llama-2",
+        system_template="[INST] <<SYS>>\n{system_message}\n<</SYS>>\n\n",
+        roles=("[INST]", "[/INST]"),
+        sep_style=SeparatorStyle.LLAMA2,
+        sep=" ",
+        sep2=" </s><s>",
+    )
+)
+"""
 
 class SuffixManager:
     # 这个类的作用作为储存 suffix的buffer
@@ -38,13 +54,19 @@ class SuffixManager:
         toks = encoding.input_ids
 
         if self.conv_template.name == 'llama-2':
-
+            """"
             self.conv_template.messages = []
             test = "a"
             self.conv_template.append_message(self.conv_template.roles[0], test)
             toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
             test_toks = self.tokenizer(test).input_ids
             self._user_role_slice = slice(None, len(toks) - len(test_toks))
+            """
+            self.conv_template.messages = []
+
+            self.conv_template.append_message(self.conv_template.roles[0], None)
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            self._user_role_slice = slice(None, len(toks))
 
             self.conv_template.update_last_message(f"{self.instruction}")
             toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
