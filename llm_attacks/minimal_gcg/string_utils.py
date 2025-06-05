@@ -58,7 +58,7 @@ class SuffixManager:
             self.conv_template.messages = []
             test = "a"
             self.conv_template.append_message(self.conv_template.roles[0], test)
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens = False).input_ids
             test_toks = self.tokenizer(test).input_ids
             self._user_role_slice = slice(None, len(toks) - len(test_toks))
 
