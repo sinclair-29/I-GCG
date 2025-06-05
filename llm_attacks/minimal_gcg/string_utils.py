@@ -61,13 +61,6 @@ class SuffixManager:
             toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
             test_toks = self.tokenizer(test).input_ids
             self._user_role_slice = slice(None, len(toks) - len(test_toks))
-            """
-            self.conv_template.messages = []
-
-            self.conv_template.append_message(self.conv_template.roles[0], None)
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
-            self._user_role_slice = slice(None, len(toks))
-            """
 
             self.conv_template.update_last_message(f"{self.instruction}")
             toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False ).input_ids
@@ -156,9 +149,9 @@ class SuffixManager:
         print("===========")
         return prompt
     
-    def get_input_ids(self, adv_string=None):
+    def get_input_ids(self, adv_string=None, is_add_special_tokens = True):
         prompt = self.get_prompt(adv_string=adv_string)
-        toks = self.tokenizer(prompt).input_ids
+        toks = self.tokenizer(prompt, add_special_tokens=is_add_special_tokens).input_ids
         input_ids = torch.tensor(toks[:self._target_slice.stop])
 
         return input_ids
@@ -183,7 +176,26 @@ def main():
     # prompt_str = manager.get_prompt()
     # print("\n【生成的完整 prompt】\n", prompt_str)
 
-    input_ids = manager.get_input_ids()
+    input_ids = manager.get_input_ids(is_add_special_tokens= True)
+    print("\n【input_ids 形状】:", input_ids.shape)
+    print("【input_ids 内容】:", input_ids.tolist())
+
+    print("\n【各 slice 范围】:")
+    print("User Role Slice:", manager._user_role_slice)
+    print("Goal Slice:", manager._goal_slice)
+    print("Control Slice:", manager._control_slice)
+    print("Assistant Role Slice:", manager._assistant_role_slice)
+    print("Target Slice:", manager._target_slice)
+    print("Loss Slice:", manager._loss_slice)
+
+    print("User Role Slice内容:", decode_slice(manager._user_role_slice))
+    print("Goal Slice内容:", decode_slice(manager._goal_slice))
+    print("Control Slice内容:", decode_slice(manager._control_slice))
+    print("Assistant Role Slice内容:", decode_slice(manager._assistant_role_slice))
+    print("Target Slice内容:", decode_slice(manager._target_slice))
+    print("Loss Slice内容:", decode_slice(manager._loss_slice))
+    print("==============\n")
+    input_ids = manager.get_input_ids(is_add_special_tokens= False)
     print("\n【input_ids 形状】:", input_ids.shape)
     print("【input_ids 内容】:", input_ids.tolist())
 
