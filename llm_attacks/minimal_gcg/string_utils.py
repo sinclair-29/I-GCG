@@ -39,25 +39,25 @@ class SuffixManager:
             self.conv_template.messages = []
             test = "a"
             self.conv_template.append_message(self.conv_template.roles[0], test)
-            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
-            test_toks = self.tokenizer(test, add_special_tokens=False).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            test_toks = self.tokenizer(test).input_ids
             self._user_role_slice = slice(None, len(toks) - len(test_toks))
 
             self.conv_template.update_last_message(f"{self.instruction}")
-            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
             self._goal_slice = slice(self._user_role_slice.stop, max(self._user_role_slice.stop, len(toks)))
 
             separator = ' ' if self.instruction else ''
             self.conv_template.update_last_message(f"{self.instruction}{separator}{self.adv_string}")
-            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
             self._control_slice = slice(self._goal_slice.stop, len(toks))
 
             self.conv_template.append_message(self.conv_template.roles[1], test)
-            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
             self._assistant_role_slice = slice(self._control_slice.stop, len(toks) - len(test_toks))
 
             self.conv_template.update_last_message(f"{self.target}")
-            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
             self._target_slice = slice(self._assistant_role_slice.stop, len(toks)-2)
             self._loss_slice = slice(self._assistant_role_slice.stop-1, len(toks)-3)
 
@@ -91,7 +91,7 @@ def main():
         adv_string="!!!TEST ADVERSARIAL STRING!!!"
     )
 
-    input_ids = manager.get_input_ids(is_add_special_tokens= False)
+    input_ids = manager.get_input_ids(is_add_special_tokens= True)
     print("\n【input_ids 形状】:", input_ids.shape)
     print("【input_ids 内容】:", input_ids.tolist())
 
