@@ -91,28 +91,6 @@ def main():
         adv_string="!!!TEST ADVERSARIAL STRING!!!"
     )
 
-    # prompt_str = manager.get_prompt()
-    # print("\n【生成的完整 prompt】\n", prompt_str)
-
-    input_ids = manager.get_input_ids(is_add_special_tokens= True)
-    print("\n【input_ids 形状】:", input_ids.shape)
-    print("【input_ids 内容】:", input_ids.tolist())
-
-    print("\n【各 slice 范围】:")
-    print("User Role Slice:", manager._user_role_slice)
-    print("Goal Slice:", manager._goal_slice)
-    print("Control Slice:", manager._control_slice)
-    print("Assistant Role Slice:", manager._assistant_role_slice)
-    print("Target Slice:", manager._target_slice)
-    print("Loss Slice:", manager._loss_slice)
-
-    print("User Role Slice内容:", decode_slice(manager._user_role_slice))
-    print("Goal Slice内容:", decode_slice(manager._goal_slice))
-    print("Control Slice内容:", decode_slice(manager._control_slice))
-    print("Assistant Role Slice内容:", decode_slice(manager._assistant_role_slice))
-    print("Target Slice内容:", decode_slice(manager._target_slice))
-    print("Loss Slice内容:", decode_slice(manager._loss_slice))
-    print("==============\n")
     input_ids = manager.get_input_ids(is_add_special_tokens= False)
     print("\n【input_ids 形状】:", input_ids.shape)
     print("【input_ids 内容】:", input_ids.tolist())
