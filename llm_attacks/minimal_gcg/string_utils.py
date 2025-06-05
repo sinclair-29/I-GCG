@@ -13,26 +13,7 @@ def load_conversation_template(template_name):
     
     return conv_template
 
-
-"""
-# llama2 template
-# reference: https://huggingface.co/blog/codellama#conversational-instructions
-# reference: https://github.com/facebookresearch/llama/blob/1a240688810f8036049e8da36b073f63d2ac552c/llama/generation.py#L212
-register_conv_template(
-    Conversation(
-        name="llama-2",
-        system_template="[INST] <<SYS>>\n{system_message}\n<</SYS>>\n\n",
-        roles=("[INST]", "[/INST]"),
-        sep_style=SeparatorStyle.LLAMA2,
-        sep=" ",
-        sep2=" </s><s>",
-    )
-)
-"""
-
 class SuffixManager:
-    # 这个类的作用作为储存 suffix的buffer
-    # 存在问题，fastchat
     def __init__(self, *, tokenizer, conv_template, instruction, target, adv_string):
 
         self.tokenizer = tokenizer
@@ -58,25 +39,25 @@ class SuffixManager:
             self.conv_template.messages = []
             test = "a"
             self.conv_template.append_message(self.conv_template.roles[0], test)
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
-            test_toks = self.tokenizer(test).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
+            test_toks = self.tokenizer(test, add_special_tokens=False).input_ids
             self._user_role_slice = slice(None, len(toks) - len(test_toks))
 
             self.conv_template.update_last_message(f"{self.instruction}")
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
             self._goal_slice = slice(self._user_role_slice.stop, max(self._user_role_slice.stop, len(toks)))
 
             separator = ' ' if self.instruction else ''
             self.conv_template.update_last_message(f"{self.instruction}{separator}{self.adv_string}")
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
             self._control_slice = slice(self._goal_slice.stop, len(toks))
 
             self.conv_template.append_message(self.conv_template.roles[1], test)
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
             self._assistant_role_slice = slice(self._control_slice.stop, len(toks) - len(test_toks))
 
             self.conv_template.update_last_message(f"{self.target}")
-            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            toks = self.tokenizer(self.conv_template.get_prompt(), add_special_tokens=False).input_ids
             self._target_slice = slice(self._assistant_role_slice.stop, len(toks)-2)
             self._loss_slice = slice(self._assistant_role_slice.stop-1, len(toks)-3)
 
