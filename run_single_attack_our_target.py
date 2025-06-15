@@ -1,10 +1,10 @@
-import time
-import random
+# import threading # Removed
+# import time # Removed, unless run_single_process needs it for other reasons
+# import random # Removed, unless run_single_process needs it for other reasons
 import datetime
-import logging # logging 模块本身可能仍然有用，即使不用多线程
+# import logging # Was not used in the original snippet, can be removed if not used by run_single_process
 from run_single_attack_base import run_single_process
 import os
-# make the timestamp utc-8
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -12,51 +12,54 @@ parser.add_argument('--defense', type=str, default="no_defense")
 parser.add_argument('--behaviors_config', type=str, default="behaviors_config.json")
 parser.add_argument('--output_path', type=str,
                     default='ours')
-# 新增参数，允许用户指定GPU ID
-parser.add_argument('--gpu_id', type=int, default=0, help="The ID of the single GPU to use")
+# Add an argument for specifying the single GPU device ID
+parser.add_argument('--device_id', type=int, default=0, help="ID of the single GPU to use (e.g., 0 for A100)")
 
 
 args = parser.parse_args()
 
-# --- 修改：使用单个GPU ---
-# device_list = [0,1,2,3] # 原来的多GPU列表
-single_gpu_id = args.gpu_id # 使用命令行指定的GPU ID，默认为0
-# --- 修改结束 ---
+# Use the specified single device ID
+single_device_id = args.device_id
 
-defense=args.defense
+defense = args.defense
 timestamp = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime("%Y%m%d-%H%M%S")
 
-output_path=os.path.join("Our_GCG_target_len_20",args.output_path)
-output_path=os.path.join(output_path,str(timestamp))
+output_path = os.path.join("Our_GCG_target_len_20", args.output_path)
+output_path = os.path.join(output_path, str(timestamp))
 
-# 确保输出目录存在
+# Create the output directory if it doesn't exist
 if not os.path.exists(output_path):
     os.makedirs(output_path)
     print(f"Created output directory: {output_path}")
 
+behaviors_config_file = args.behaviors_config # Renamed for clarity
+behavior_id_list = [i + 1 for i in range(50)] # Assuming 50 behaviors
 
-behaviors_config=args.behaviors_config
-behavior_id_list = [i + 1 for i in range(50)]
+# Optional: Add id to black_list to skip the id
+# black_list = [10, 25]
+# behavior_id_list = [i for i in behavior_id_list if i not in black_list]
 
-tasks_to_process = list(behavior_id_list) # 创建一个副本以防原始列表被意外修改
+# Optional: Add id to white_list to only run the id
+# white_list = [1, 5, 7]
+# behavior_id_list = [i for i in behavior_id_list if i in white_list]
 
-print(f"Starting processing on single GPU: {single_gpu_id}")
-print(f"Output path: {output_path}")
-print(f"Defense: {defense}")
-print(f"Behaviors config: {behaviors_config}")
-print(f"Total tasks to process: {len(tasks_to_process)}")
 
-for i, task_id in enumerate(tasks_to_process):
-    print(f"--- Processing task {i+1}/{len(tasks_to_process)} (ID: {task_id}) using GPU {single_gpu_id} ---")
-    start_time = time.time()
+print(f"Starting sequential processing on device GPU:{single_device_id}")
+print(f"Total tasks to process: {len(behavior_id_list)}")
+print(f"Output will be saved to: {output_path}")
+print(f"Behaviors config file: {behaviors_config_file}")
+print(f"Defense mode: {defense}")
+
+# Sequentially process each task
+for task_id in behavior_id_list:
+    print(f"Processing task {task_id} using device GPU:{single_device_id}...")
     try:
-        run_single_process(task_id, single_gpu_id, output_path, defense, behaviors_config)
-        end_time = time.time()
-        print(f"--- Successfully completed task {task_id}. Time taken: {end_time - start_time:.2f} seconds ---")
+        # The run_single_process function is called directly.
+        # It needs the task_id, the device_id, output_path, defense, and behaviors_config file.
+        run_single_process(task_id, single_device_id, output_path, defense, behaviors_config_file)
+        print(f"Completed task {task_id}.")
     except Exception as e:
-        end_time = time.time()
-        print(f"!!! Error processing task {task_id}: {e}. Time taken: {end_time - start_time:.2f} seconds !!!")
-        logging.error(f"Error processing task {task_id} on GPU {single_gpu_id}: {e}", exc_info=True)
-
+        print(f"Error processing task {task_id}: {e}")
+        # Optionally, you might want to log this error to a file or continue to the next task.
 
 print("All tasks completed!")
