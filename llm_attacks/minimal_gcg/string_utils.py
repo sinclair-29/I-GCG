@@ -26,56 +26,43 @@ class SuffixManager:
 
         self._full_prompt_str = None
 
+
     def get_prompt(self, adv_string: str = None) -> str:
+        final_prompt_str = None
+
         if adv_string is not None:
             self.adv_string = adv_string
 
-        self.conv_template.message = []
+        if self.conv_template.name == "llama-2":
+            self.conv_template.messages = []
+            test = "a"
+            self.conv_template.append_message(self.conv_template.roles[0], test)
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            self._user_role_slice = slice(None, len(toks) - 2)
 
-        str_instruction_segment = self.instruction
-        str_user_role_start_segment = self.conv_template.system_template.format(
-            system_message=self.conv_template.system_message)
+            self.conv_template.update_last_message(f"{self.instruction}")
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            self._goal_slice = slice(self._user_role_slice.stop, len(toks) - 1)
 
-        separator = ' ' if self.instruction else ''
-        str_adv_segment_with_separator = separator + self.adv_string
+            separator = ' ' if self.instruction else ''
+            self.conv_template.update_last_message(f"{self.instruction}{separator}{self.adv_string}")
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            self._adv_slice = slice(self._goal_slice.stop, len(toks) - 1)
 
-        user_content_full = str_instruction_segment + str_adv_segment_with_separator
+            self.conv_template.append_message(self.conv_template.roles[1], None)
+            toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
+            self._assistant_role_slice = slice(self._adv_slice.stop, len(toks))
 
-        str_assistant_role_segment = self.conv_template.roles[1] + " "
-        str_target_segment = self.target
-        str_eos_segment = " </s>"
+            self.conv_template.update_last_message(f"{self.target}")
+            final_prompt_str = self.conv_template.get_prompt()
+            toks = self.tokenizer(final_prompt_str).input_ids
 
-        self.conv_template.append_message(self.conv_template.roles[0], user_content_full)
-        self.conv_template.append_message(self.conv_template.roles[1], str_target_segment)
-        self._full_prompt_str = self.conv_template.get_prompt()
+            # skip </s><s>
+            self._target_slice = slice(self._assistant_role_slice.stop, len(toks) - 2)
+            self._loss_slice = slice(self._assistant_role_slice.stop - 1, len(toks) - 3)
 
-        tok_user_role_start = self.tokenizer(str_user_role_start_segment, add_special_tokens=True).input_ids
-        tok_instruction = self.tokenizer(str_instruction_segment, add_special_tokens=False).input_ids
-        tok_adv_with_sep = self.tokenizer(str_adv_segment_with_separator, add_special_tokens=False).input_ids
-        tok_assistant_role = self.tokenizer(str_assistant_role_segment, add_special_tokens=False).input_ids
-        tok_target = self.tokenizer(str_target_segment, add_special_tokens=False).input_ids
-
-        current_idx = 0
-        self._user_role_slice = slice(current_idx, current_idx + len(tok_user_role_start))
-        current_idx += len(tok_user_role_start)
-
-        self._goal_slice = slice(current_idx, current_idx + len(tok_instruction))
-        current_idx += len(tok_instruction)
-
-        self._adv_slice = slice(current_idx, current_idx + len(tok_adv_with_sep))
-        current_idx += len(tok_adv_with_sep)
-
-        self._assistant_role_slice = slice(current_idx, current_idx + len(tok_assistant_role))
-        current_idx += len(tok_assistant_role)
-
-        self._target_slice = slice(current_idx, current_idx + len(tok_target))
-
-        self._loss_slice = slice(
-            self._assistant_role_slice.stop - 1,
-            self._target_slice.stop - 1 if self.target else self._assistant_role_slice.stop - 1
-        )
-
-        return self._full_prompt_str
+        self.conv_template.messages = []
+        return final_prompt_str
     
     def get_input_ids(self, adv_string=None, is_add_special_tokens = True):
         prompt = self.get_prompt(adv_string=adv_string)
