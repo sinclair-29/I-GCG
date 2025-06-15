@@ -19,7 +19,7 @@ class SuffixManager:
 
         self._user_role_slice = None
         self._goal_slice = None
-        self._adv_slice = None
+        self._control_slice = None
         self._assistant_role_slice = None
         self._target_slice = None
         self._loss_slice = None
@@ -47,7 +47,7 @@ class SuffixManager:
             separator = ' ' if self.instruction else ''
             self.conv_template.update_last_message(f"{self.instruction}{separator}{self.adv_string}")
             toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
-            self._adv_slice = slice(self._goal_slice.stop, len(toks) - 1)
+            self._control_slice = slice(self._goal_slice.stop, len(toks) - 1)
 
             self.conv_template.append_message(self.conv_template.roles[1], None)
             toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
