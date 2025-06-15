@@ -51,7 +51,7 @@ class SuffixManager:
 
             self.conv_template.append_message(self.conv_template.roles[1], None)
             toks = self.tokenizer(self.conv_template.get_prompt()).input_ids
-            self._assistant_role_slice = slice(self._adv_slice.stop, len(toks))
+            self._assistant_role_slice = slice(self._control_slice.stop, len(toks))
 
             self.conv_template.update_last_message(f"{self.target}")
             final_prompt_str = self.conv_template.get_prompt()
